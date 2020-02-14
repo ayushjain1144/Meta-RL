@@ -1,7 +1,7 @@
 Code for MPI Application Submission
 
 
-Refernces:
+References:
 
 - Blog: https://blog.floydhub.com/meta-rl/
-- 
+
