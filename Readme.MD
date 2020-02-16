@@ -8,4 +8,4 @@ References:
 - Paper: https://arxiv.org/pdf/1901.08162.pdf
 - WebPPL: https://agentmodels.org/chapters/2-webppl.html
 - WebPPL: http://dippl.org/chapters/02-webppl.html
-
+- Paper: https://cocosci.princeton.edu/papers/Meta_Decision_Making-CameraReady.pdf
