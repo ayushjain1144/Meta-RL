@@ -4,4 +4,8 @@ Code for MPI Application Submission
 References:
 
 - Blog: https://blog.floydhub.com/meta-rl/
+- Paper: Callaway, Frederick, et al. "Learning to select computations." arXiv preprint arXiv:1711.06892 (2017).
+- Paper: https://arxiv.org/pdf/1901.08162.pdf
+- WebPPL: https://agentmodels.org/chapters/2-webppl.html
+- WebPPL: http://dippl.org/chapters/02-webppl.html
 
