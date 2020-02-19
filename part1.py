@@ -52,20 +52,37 @@ def get_reward(g1, g2, heurestic, roulette_wheel):
         return g.y
         
 
-def get_cost(heurestic):
+def get_time_cost(heurestic):
+    
+    
     if heurestic == 'ewh':
         return 3
     else:
         return 1
 
+def get_relative_reward(g1, g2, heurestic, roulette_wheel):
+
+    actual_reward = get_reward(g1, g2, heurestic, roulette_wheel)
+
+    if roulette_wheel < g1.p:
+        max_reward_strategy = max(g1.x, g2.x)
+    else:
+        max_reward_strategy = max(g1.y, g2.y)
+    
+    predicted_relative_reward =  (actual_reward / max_reward_strategy)
+
+    min_possible_reward = min(g1.x, g1.y, g2.x, g2.y)
+    max_possible_strategy = max(g1.x, g1.y, g2.x, g2.y)
+    predicted_absolute_reward = min(min_possible_reward + (max_possible_strategy - min_possible_reward) * predicted_relative_reward, max_possible_strategy)
+
+    return predicted_absolute_reward 
+
+
 # VOC = (utility of strategy s) - gamma * cost
 def get_voc(g1, g2, heurestic, roulette_wheel, reward, t):
     utility = get_reward(g1, g2, heurestic, roulette_wheel)
-    cost = get_cost(heurestic)
-    mu = (1 + reward) / (1 + t)
-    sigma = 1 + t
-    gamma = numpy.random.normal(mu, sigma)
-
+    gamma = get_relative_reward(g1, g2, heurestic, roulette_wheel)
+    cost = get_time_cost(heurestic)
     voc = utility - (gamma * cost)
     print(gamma, voc, heurestic)
     return voc
@@ -79,7 +96,7 @@ reward = 0
 t = 0
 count_ewh = 0
 count_lh = 0
-while t < 1000:
+while t < 100:
     p = random.uniform(0.5, 0.6)
     x1 = random.uniform(-10, 10)
     y1 = random.uniform(-10, 10)
