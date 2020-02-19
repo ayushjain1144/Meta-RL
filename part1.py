@@ -84,10 +84,12 @@ def get_voc(g1, g2, heurestic, roulette_wheel, reward, t):
     gamma = get_relative_reward(g1, g2, heurestic, roulette_wheel)
     cost = get_time_cost(heurestic)
     voc = utility - (gamma * cost)
-    print(gamma, voc, heurestic)
+    #print(gamma, voc, heurestic)
     return voc
     
-    
+
+
+
 
 #################### main function #################
 
@@ -96,8 +98,11 @@ reward = 0
 t = 0
 count_ewh = 0
 count_lh = 0
-while t < 100:
-    p = random.uniform(0.5, 0.6)
+
+voc_lh_total = 0
+voc_ewh_total = 0
+while t < 1000:
+    p = random.uniform(0.9, 1.0)
     x1 = random.uniform(-10, 10)
     y1 = random.uniform(-10, 10)
     x2 = random.uniform(-10, 10)
@@ -110,24 +115,63 @@ while t < 100:
 
     voc_ewh = get_voc(g1, g2, 'ewh', roulette_wheel, reward, t)
     voc_lh = get_voc(g1, g2, 'lh', roulette_wheel, reward, t)
+    print(voc_ewh, voc_lh)
+    voc_lh_total = voc_lh + voc_lh_total
+    voc_ewh_total = voc_ewh + voc_ewh_total
 
     if voc_ewh > voc_lh:
         t = t + 3
         reward = reward + get_reward(g1, g2, 'ewh', roulette_wheel)
         count_ewh = count_ewh + 1
-        print('ewh')
+        #print('ewh')
     else:
         t = t + 1
         reward = reward + get_reward(g1, g2, 'lh', roulette_wheel)
         count_lh = count_lh + 1
-        print('lh')
-    print(t, g1.x, g1.y, g2.x, g2.y, reward)
+        #print('lh')
+    #print(t, g1.x, g1.y, g2.x, g2.y, reward)
     
-    
-
-print(reward)
-print(count_ewh, count_lh)
 
 
+def run():
+    reward = 0
+
+    t = 0
+    count_ewh = 0
+    count_lh = 0
+
+    voc_lh_total = 0
+    voc_ewh_total = 0
+    while t < 1000:
+        p = random.uniform(0.9, 1.0)
+        x1 = random.uniform(-10, 10)
+        y1 = random.uniform(-10, 10)
+        x2 = random.uniform(-10, 10)
+        y2 = random.uniform(-10, 10)
+        
+        g1 = Gamble(p, x1, y1)
+        g2 = Gamble(p, x2, y2)
+
+        roulette_wheel = random.random()
+
+        voc_ewh = get_voc(g1, g2, 'ewh', roulette_wheel, reward, t)
+        voc_lh = get_voc(g1, g2, 'lh', roulette_wheel, reward, t)
+        print(voc_ewh, voc_lh)
+        voc_lh_total = voc_lh + voc_lh_total
+        voc_ewh_total = voc_ewh + voc_ewh_total
+
+        if voc_ewh > voc_lh:
+            t = t + 3
+            reward = reward + get_reward(g1, g2, 'ewh', roulette_wheel)
+            count_ewh = count_ewh + 1
+            #print('ewh')
+        else:
+            t = t + 1
+            reward = reward + get_reward(g1, g2, 'lh', roulette_wheel)
+            count_lh = count_lh + 1
+
+    print(voc_ewh_total, voc_lh_total)
+#print(reward)
+#print(count_ewh, count_lh)
 
     
