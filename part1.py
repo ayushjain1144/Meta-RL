@@ -1,5 +1,7 @@
 import random
+import numpy
 from dataclasses import dataclass
+import time
 
 @dataclass
 class Gamble:
@@ -36,14 +38,12 @@ def equal_weight_heurestic(g1, g2):
     else:
         return g2
  
-def get_reward(g1, g2, heurestic):
+def get_reward(g1, g2, heurestic, roulette_wheel):
     
     if heurestic == 'ewh':
         g = equal_weight_heurestic(g1, g2)
     else:
-        g = lexigographic_heurestic(g1, g2)    
-
-    roulette_wheel = random.random()
+        g = lexigographic_heurestic(g1, g2) 
     
 
     if (roulette_wheel < g1.p):
@@ -52,15 +52,35 @@ def get_reward(g1, g2, heurestic):
         return g.y
         
 
+def get_cost(heurestic):
+    if heurestic == 'ewh':
+        return 3
+    else:
+        return 1
 
+# VOC = (utility of strategy s) - gamma * cost
+def get_voc(g1, g2, heurestic, roulette_wheel, reward, t):
+    utility = get_reward(g1, g2, heurestic, roulette_wheel)
+    cost = get_cost(heurestic)
+    mu = (1 + reward) / (1 + t)
+    sigma = 1 + t
+    gamma = numpy.random.normal(mu, sigma)
 
+    voc = utility - (gamma * cost)
+    print(gamma, voc, heurestic)
+    return voc
+    
+    
 
 #################### main function #################
 
 reward = 0
 
-for i in range(1000):
-    p = random.uniform(0.5, 1)
+t = 0
+count_ewh = 0
+count_lh = 0
+while t < 1000:
+    p = random.uniform(0.5, 0.6)
     x1 = random.uniform(-10, 10)
     y1 = random.uniform(-10, 10)
     x2 = random.uniform(-10, 10)
@@ -68,12 +88,28 @@ for i in range(1000):
     
     g1 = Gamble(p, x1, y1)
     g2 = Gamble(p, x2, y2)
-   
-    temp_reward = get_reward(g1, g2, 'ewh')
-    print(g1.x, g1.y, g2.x, g2.y, temp_reward)
-    reward = reward + temp_reward
+
+    roulette_wheel = random.random()
+
+    voc_ewh = get_voc(g1, g2, 'ewh', roulette_wheel, reward, t)
+    voc_lh = get_voc(g1, g2, 'lh', roulette_wheel, reward, t)
+
+    if voc_ewh > voc_lh:
+        t = t + 3
+        reward = reward + get_reward(g1, g2, 'ewh', roulette_wheel)
+        count_ewh = count_ewh + 1
+        print('ewh')
+    else:
+        t = t + 1
+        reward = reward + get_reward(g1, g2, 'lh', roulette_wheel)
+        count_lh = count_lh + 1
+        print('lh')
+    print(t, g1.x, g1.y, g2.x, g2.y, reward)
+    
+    
 
 print(reward)
+print(count_ewh, count_lh)
 
 
 
