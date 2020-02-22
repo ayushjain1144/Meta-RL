@@ -2,6 +2,8 @@ import random
 import numpy as np
 from dataclasses import dataclass
 import time
+import matplotlib.pyplot as plt
+import sys
 
 # 7 dollars per hour or 0.002 dollars / sec
 OPPORTUNITY_COST  =  0.002
@@ -93,7 +95,7 @@ def get_relative_reward(g1, g2, heurestic):
 
     # expected reward = o1*p + o2*(1-p)
 
-    expected_reward = predicted_relative_reward_o1 * p + predicted_relative_reward_o2 * (1 - p)
+    expected_reward = predicted_relative_reward_o1 * g1.p + predicted_relative_reward_o2 * (1 - g1.p)
 
     min_possible_reward = min(g1.x, g1.y, g2.x, g2.y)
     max_possible_strategy = max(g1.x, g1.y, g2.x, g2.y)
@@ -131,55 +133,111 @@ def get_strategy_epsilon_greedy(voc_ewh, voc_lh):
         else:
             return "lh"
 
-    
+
+# function code adopted from https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/barchart.html  
+def autolabel(rects, ax):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
 
 
 #################### main function #################
 
-reward = 0
+def run(n, prob_lower_bound = 0.5, prob_upper_bound = 1.0):
 
-t = 0
-count_ewh = 0
-count_lh = 0
+    if prob_lower_bound > 1 or prob_upper_bound < prob_lower_bound:
+        print(f"Improper values of lower bound ({prob_lower_bound}) and upper bound ({prob_upper_bound})")
+        sys.exit()
+    results_ewh = []
+    results_lh = []
+    for i in range(n):
+        reward = 0
 
-voc_lh_total = 0
-voc_ewh_total = 0
-while t < 1000:
+        t = 0
+        count_ewh = 0
+        count_lh = 0
 
-    print(f"\nPresent time:  {t}\n")
-    p = random.uniform(MIN_BOUND , 1.0)
-    x1 = random.uniform(-10, 10)
-    y1 = random.uniform(-10, 10)
-    x2 = random.uniform(-10, 10)
-    y2 = random.uniform(-10, 10)
+        while t < 1000:
+
+            print(f"\nPresent time:  {t}\n")
+            p = random.uniform(prob_lower_bound , 1.0)
+            x1 = random.uniform(-10, 10)
+            y1 = random.uniform(-10, 10)
+            x2 = random.uniform(-10, 10)
+            y2 = random.uniform(-10, 10)
+            
+            g1 = Gamble(p, x1, y1)
+            g2 = Gamble(p, x2, y2)
+
+            # for selecting the actual outcome, similar to what is done in genetic algorithms
+            roulette_wheel = random.random()
+
+            voc_ewh = get_voc(g1, g2, 'ewh')
+            voc_lh = get_voc(g1, g2, 'lh')
+
+            heurestic = get_strategy_epsilon_greedy(voc_ewh, voc_lh)
+            print(f"usinh heurestic: {heurestic}")
+            reward = reward + get_reward(g1, g2, heurestic, roulette_wheel)
+            print(f"got reward: {reward}")
+            #print(voc_ewh, voc_lh, g1, g2)
+
+            
+            if heurestic == "ewh":
+                t = t + 8
+                count_ewh = count_ewh + 1
+            else:
+                t = t + 4
+                count_lh = count_lh + 1
+
+        print("\nFinal statistics\n\n")
+
+        print(f"\n\ntotal reward: {reward}")
+        print(f"number of times equal weight heurestic is used: {count_ewh}")
+        print(f"number of lexigographic heurestic is used: {count_lh}")
+        results_ewh.append(count_ewh)
+        results_lh.append(count_lh)
+
+    print(results_ewh, results_lh)
+
+    return results_ewh, results_lh
+
+def plot_results(results_ewh, results_lh, prob_lower_bound, prob_upper_bound):
+    labels = ['run1', 'run2', 'run3', 'run4', 'run5']
+
+    x = np.arange(len(labels))  # the label locations
+    width = 0.35  # the width of the bars
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width/2, results_ewh, width, label='Equal Weight Heurestic')
+    rects2 = ax.bar(x + width/2, results_lh, width, label='Lexicographic Heurestic')
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Number of times the heurestic was used')
+    ax.set_title(f'Comparitive study of distribution of rewards for p between {prob_lower_bound} and {prob_upper_bound}')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+
+    autolabel(rects1, ax)
+    autolabel(rects2, ax)
+
+    fig.tight_layout()
+
+    plt.show()
+
+
+def main():
+
+    prob_lower_bound = 0.5
+    prob_upper_bound = 1.0
+    results_ewh, results_lh = run(5, prob_lower_bound, prob_upper_bound)
+    plot_results(results_ewh, results_lh, prob_lower_bound, prob_upper_bound)
     
-    g1 = Gamble(p, x1, y1)
-    g2 = Gamble(p, x2, y2)
 
-    # for selecting the actual outcome, similar to what is done in genetic algorithms
-    roulette_wheel = random.random()
-
-    voc_ewh = get_voc(g1, g2, 'ewh')
-    voc_lh = get_voc(g1, g2, 'lh')
-
-    heurestic = get_strategy_epsilon_greedy(voc_ewh, voc_lh)
-    print(f"usinh heurestic: {heurestic}")
-    reward = reward + get_reward(g1, g2, heurestic, roulette_wheel)
-    print(f"got reward: {reward}")
-    #print(voc_ewh, voc_lh, g1, g2)
-
-    
-    if heurestic == "ewh":
-        t = t + 8
-        count_ewh = count_ewh + 1
-    else:
-        t = t + 4
-        count_lh = count_lh + 1
-
-print("\nFinal statistics\n\n")
-
-print(f"\n\ntotal reward: {reward}")
-print(f"number of times equal weight heurestic is used: {count_ewh}")
-print(f"number of lexigographic heurestic is used: {count_lh}")
-
-
+if __name__ == "__main__":
+    main()
