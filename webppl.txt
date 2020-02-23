@@ -1,0 +1,14 @@
+var read_grammar = function(rule){
+  return rule.split('->').join(',').split(' ').join(',').split(',').join('').split('')
+}
+
+read_grammar("A -> B C D a")
+
+
+var grammar1 = {'S': {rhs: [['a', 'S', 'b'], ['b', 'S', 'a'], ['a'], ['b']], probs: [0.5, 0.2, 0.1, 0.2]} }
+
+var theta = sample(Beta({a: 0.1, b: 0.1}));
+var grammar2 = {'S': {rhs: [['X', 'a'], ['b', 'Y']], probs: [theta, 1 - theta]},
+               'Y': {rhs: [['a', 'Y'], ['b']], probs: [0.4, 0.6]},
+               'X': {rhs: [['X', 'b'], ['a']], probs: [0.2, 0.8]}};
+

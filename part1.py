@@ -234,6 +234,11 @@ def plot_results(results_ewh, results_lh, prob_lower_bound, prob_upper_bound):
 def main():
 
     prob_lower_bound = 0.5
+    prob_upper_bound = 0.6
+    results_ewh, results_lh = run(5, prob_lower_bound, prob_upper_bound)
+    plot_results(results_ewh, results_lh, prob_lower_bound, prob_upper_bound)
+
+    prob_lower_bound = 0.9
     prob_upper_bound = 1.0
     results_ewh, results_lh = run(5, prob_lower_bound, prob_upper_bound)
     plot_results(results_ewh, results_lh, prob_lower_bound, prob_upper_bound)
