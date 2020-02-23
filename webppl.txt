@@ -1,72 +1,3 @@
-var read_grammar = function(rule){
-  return rule.split('->').join(',').split(' ').join(',').split(',').join('').split('')
-}
-
-read_grammar("A -> B C D a")
-
-var grammar1 = 
-
-var theta = sample(Beta({a: 0.1, b: 0.1}));
-var grammar2 = {'rules': {'S': {rhs: [['X', 'a'], ['b', 'Y']], probs: [theta, 1 - theta]},
-               'Y': {rhs: [['a', 'Y'], ['b']], probs: [0.4, 0.6]},
-               'X': {rhs: [['X', 'b'], ['a']], probs: [0.2, 0.8]}}, 'probs': [0.3]};
-
-var split_input_string = function(token){
-  return token.split('')
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-var pcfgTransition = function(symbol) {
-  var rules = {'S': {rhs: [['T1', 'S', 'T2'], ['T1', 'S', 'T2'], ['T1'], ['T2']], probs: [0.5, 0.2, 0.1, 0.2]} }
-  return rules[symbol].rhs[ discrete(rules[symbol].probs) ]
-}
-
-var preTerminal = function(symbol) {
-  return symbol == 'T1' | symbol=='T2'
-}
-
-var terminal = function(symbol) {
-  var rules = {'T1': {words: ['a'], probs: [1.0]},
-               'T2': {words: ['b'], probs: [1.0]}}
-  return rules[symbol].words[ discrete(rules[symbol].probs) ]
-}
-
-
-var pcfg = function(symbol) {
-  preTerminal(symbol) ? [terminal(symbol)] : expand(pcfgTransition(symbol))
-}
-
-var expand = function(symbols) {
-  if(symbols.length==0) {
-    return []
-  } else {
-    var f = pcfg(symbols[0])
-    return f.concat(expand(symbols.slice(1)))
-  }
-}
-
-var model = function(){
-  var y = pcfg("S")
-  factor(_.isEqual(y.slice(0,3), ["a", "b", "a"]) ? 0 : -Infinity) // yield starts with "tall John"
-  return y[3] ? y[3] : "" // distribution on next word?
-}
-
-viz.table(Infer({ model, method: 'enumerate', maxExecutions: 20}))
-
-///////////////////////////////////////////////////////////////////////////////////
-
-
-condition(JSON.stringify(y) == JSON.stringify(["a", "b", "b"]));
-
-
-
-
-
-//////////////mostly correct////////////////////////////////////////
-
 var pcfgTransition = function(symbol) {
   var rules = {'S': {rhs: [['T1', 'S', 'T2'], ['T1', 'S', 'T2'], ['T1'], ['T2']], probs: [0.5, 0.2, 0.1, 0.2]} }
   return rules[symbol].rhs[ discrete(rules[symbol].probs) ]
@@ -95,20 +26,6 @@ var expand = function(symbols) {
     return f.concat(expand(symbols.slice(1)))
   }
 }
-
-
-/*
-var model = function(){
-  var y = pcfg("S")
-  //display(y);
-  //console.log(JSON.stringify(y) == JSON.stringify(["a", "b", "b"]));
-  //document.write(y);
-  condition(JSON.stringify(y) == JSON.stringify(["a", "b", "b"]));
-  //factor(_.isEqual(y.slice(0,2), ["a", "b"]) ? 0 : -Infinity) // yield starts with "tall John"
-  //return y[2] ? y[2] : "" // distribution on next word?
-  
-}
-*/
 
 var theta = sample(Beta({a: 0.1, b: 0.1}));
 display(theta)
@@ -143,29 +60,38 @@ var expand2 = function(symbols) {
   }
 }
 
-// var programDist = Infer({method: 'enumerate', maxExecutions: 20},
-//                        function(){
-//        var program1 = flip(0.7)
-//        var y1 = pcfg("S")
-//        var y2 = pcfg2("S")
-//        condition(JSON.stringify(y1) == JSON.stringify(["a", "b", "b"]));
-//        return {program1: program1}
+var programDist = Infer({method: 'enumerate', maxExecutions: 20},
+                       function(){
+       var program1 = flip(0.7)
+       var y1 = pcfg("S")
+       var y2 = pcfg2("S")
+       var y = program1 ? y1 : y2
+       condition(JSON.stringify(y) == JSON.stringify(["a", "b", "b"]));
+       return {program1: program1}
        
-// })
+})
 
-var programDist2 = Infer({method: 'enumerate', maxExecutions: 100},
+var programDist = Infer({method: 'enumerate', maxExecutions: 20},
+                       function(){
+       var program1 = flip(0.7)
+       var y1 = pcfg("S")
+       var y2 = pcfg2("S")
+       condition(JSON.stringify(y1) == JSON.stringify(["a", "b", "b"]));
+       return {program1: program1}
+       
+})
+
+var programDist2 = Infer({method: 'enumerate', maxExecutions: 1000},
                        function(){
        var program2 = flip(0.3)
        var y1 = pcfg("S")
        var y2 = pcfg2("S")
-       display(y2)
-       console.log(JSON.stringify(y2) == JSON.stringify(["a", "b", "a"]))
+       //display(y2)
+       //console.log(JSON.stringify(y2) == JSON.stringify(["a", "b", "a"]))
        condition(JSON.stringify(y2) == JSON.stringify(["a", "b", "a"]));
        return {program2: program2}
        
 })
 
- //viz(programDist)
+//viz(programDist)
 viz(programDist2)
-
-//////////////////////////////////////////////////////////////////////////////////////////
