@@ -165,11 +165,11 @@ def run(n, prob_lower_bound = 0.5, prob_upper_bound = 1.0):
         while t < 1000:
 
             print(f"\nPresent time:  {t}\n")
-            p = random.uniform(prob_lower_bound , 1.0)
-            x1 = random.uniform(-10, 10)
-            y1 = random.uniform(-10, 10)
-            x2 = random.uniform(-10, 10)
-            y2 = random.uniform(-10, 10)
+            p = random.uniform(prob_lower_bound , prob_upper_bound)
+            y1 = random.uniform(-10, -9)
+            x2 = random.uniform(-10, -9)
+            x1 = random.uniform(-10, -9)
+            y2 = random.uniform(-10, -9)
             
             g1 = Gamble(p, x1, y1)
             g2 = Gamble(p, x2, y2)
@@ -189,10 +189,10 @@ def run(n, prob_lower_bound = 0.5, prob_upper_bound = 1.0):
             
             if heurestic == "ewh":
                 t = t + 8
-                count_ewh = count_ewh + 1
+                count_ewh = count_ewh + 8
             else:
                 t = t + 4
-                count_lh = count_lh + 1
+                count_lh = count_lh + 4
 
         print("\nFinal statistics\n\n")
 
